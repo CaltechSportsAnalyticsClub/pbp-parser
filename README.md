@@ -7,7 +7,7 @@ Todo:
 Usage
 
 ```
-from pbp-parser import parser
+from pbp_parser import parser
 pbp = parser.PlayByPlay(game_id="0022200413")
 pbp.pbp_df
 ```
