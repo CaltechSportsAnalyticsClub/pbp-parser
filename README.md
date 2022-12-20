@@ -8,7 +8,7 @@ Todo:
     - There's also no concurrency between these five requests (partially because my previous attempts at making concurrent calls to the NBA API directly led to rate limiting, but will need to see if that's still an issue)
     - [https://github.com/rd11490/NBA-Play-By-Play-Example](this) is how I am doing it currently, with some additional logic. 
   
-- Run batches of games at a time (Threadpool so that we're not too slow, but not too fast that we get rate limited)
+- Run batches of games at a time (concurrency so that we're not too slow, but not too fast that we get rate limited)
 
 To download:
 
