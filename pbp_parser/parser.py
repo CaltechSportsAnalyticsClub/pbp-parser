@@ -2,14 +2,29 @@ import pandas as pd
 from functools import lru_cache
 import pbp_parser.helper_funcs as hf
 import pbp_parser.pbp_requests as pbp_r
+import numpy as np
 
 class PlayByPlay:
     def __init__(self, game_id):
       self.game_id = game_id
       self.pbp_df = self._pbp_with_home_away_players(game_id)
+      self.pbp_df = self.pbp_df[self.pbp_df["HOME_PLAYERS"].notnull()]
+      self._add_score_calcs()
+
+    def _add_score_calcs(self):
+      self.pbp_df["SCORE"] = self.pbp_df["SCORE"].ffill()
+      self.pbp_df["SCOREMARGIN"] = self.pbp_df["SCOREMARGIN"].ffill()
+      self.pbp_df["SCORECHANGE"] = pd.to_numeric(self.pbp_df["SCOREMARGIN"].replace("TIE", 0)).diff().replace(np.nan, 0)
+      self.pbp_df["TIMELEFTINQUARTER"] = self.pbp_df["PCTIMESTRING"].apply(lambda x: min((int(x.split(":")[0]) * 60 + int(x.split(":")[1])), 720))
+      self.pbp_df["TIMELEFTREST"] = self.pbp_df["PERIOD"].apply(lambda x: (4 - x) * 12 * 60 if x < 4 else 0)
+      self.pbp_df["TIMELEFT"] = self.pbp_df["TIMELEFTREST"] + self.pbp_df["TIMELEFTINQUARTER"]
+      self.pbp_df["PREVEVENTMSGTYPE"] = self.pbp_df["EVENTMSGTYPE"].shift(1)
+      self.pbp_df["PREV_PLAYER1_TEAM_ID"] = self.pbp_df["PLAYER1_TEAM_ID"].shift(1)
+      self.pbp_df["IS_NEW_POSS"] = self.pbp_df.apply(hf.event_is_new_poss, axis=1)
+      self.pbp_df["POSS_CNT"] = self.pbp_df["IS_NEW_POSS"].cumsum()
+      self.pbp_df.drop(labels=["IS_NEW_POSS", "PREVEVENTMSGTYPE", "PREV_PLAYER1_TEAM_ID", "TIMELEFTREST", "TIMELEFTINQUARTER"], axis=1, inplace=True)
 
     # TODO: Clean this code up
-  
     def _get_starters_by_quarter(self, period: int, game_id: str) -> dict:
 
       home_away = hf.get_home_away(game_id)
