@@ -9,6 +9,7 @@ Todo:
     - [https://github.com/rd11490/NBA-Play-By-Play-Example](this) is how I am doing it currently, with some additional logic. 
   
 - Run batches of games at a time (concurrency so that we're not too slow, but not too fast that we get rate limited)
+- Improve readme
 
 To download:
 
